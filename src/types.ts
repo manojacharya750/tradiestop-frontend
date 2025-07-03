@@ -73,9 +73,14 @@ export interface Invoice {
   items: InvoiceItem[];
   notes: string;
   subtotal: number;
-  tax: number;
+  tax: number; // This is the calculated tax amount
   total: number;
   status: PaymentStatus;
+  // New customizable fields
+  taxRate: number;
+  themeColor: string;
+  footerNotes?: string;
+  logoUrl?: string; // override for default company logo
 }
 
 
