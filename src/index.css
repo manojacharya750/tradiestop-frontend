@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #invoice-to-print, #invoice-to-print * {
+    visibility: visible;
+  }
+  #invoice-to-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none;
+  }
+}
