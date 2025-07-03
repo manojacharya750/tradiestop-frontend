@@ -1,7 +1,7 @@
 import { User, Role, Booking, Tradie, Invoice, Review, SupportTicket, Notification, CompanyDetails, InvoiceItem, PaymentStatus, ClientReview, BookingStatus, SupportTicketStatus } from '../types';
-import { AppData } from '../contexts/DataContext';
+import { AppData, InvoiceCreationPayload } from '../contexts/DataContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const getAuthToken = () => {
     try {
@@ -58,7 +58,7 @@ export const apiLogin = (userId: string, password: string): Promise<User & { tok
     return apiRequest('/auth/login', 'POST', { userId, password });
 };
 
-export const createUser = (userData: Omit<User, 'imageUrl' | 'joinedDate'> & { profession?: string }): Promise<User> => {
+export const createUser = (userData: Omit<User, 'imageUrl' | 'joinedDate'>): Promise<User> => {
      return apiRequest('/auth/signup', 'POST', userData);
 };
 
@@ -116,10 +116,6 @@ export const updateCompanyDetails = (details: CompanyDetails): Promise<Tradie> =
     return apiRequest('/tradies/company-details', 'PUT', details);
 };
 
-export const createInvoice = (bookingId: string, items: Omit<InvoiceItem, 'id'>[], notes: string): Promise<Invoice> => {
-    return apiRequest('/invoices', 'POST', { bookingId, items, notes });
-};
-
-export const markInvoiceAsPaid = (invoiceId: string): Promise<Invoice> => {
-    return apiRequest(`/invoices/${invoiceId}/pay`, 'PUT');
+export const createInvoice = (invoiceData: InvoiceCreationPayload): Promise<Invoice> => {
+    return apiRequest('/invoices', 'POST', invoiceData);
 };
