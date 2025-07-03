@@ -1,0 +1,29 @@
+# This section defines the build settings for your site.
+[build]
+  # This is the command Netlify will run to build your React app.
+  # It executes the "build" script from your package.json file.
+
+  
+  command = "npm run build"
+  
+  # This specifies the directory that contains the final, static files
+  # of your built application. Vite places the output in the 'dist' folder.
+  publish = "dist"
+
+# This section defines redirect and rewrite rules. It's essential for
+# Single-Page Applications (SPAs) like this.
+[[redirects]]
+  # This rule applies to any request path that isn't a file.
+
+  from = "/*"
+  
+  # It tells Netlify to serve your main index.html file for that path.
+
+  to = "/index.html"
+  
+  # This status code makes it a "rewrite" instead of a "redirect."
+  # It means the URL in the browser stays the same (e.g., /bookings),
+  # but Netlify serves the index.html content. This allows your
+  # React Router to take over and display the correct page.
+
+  status = 200
