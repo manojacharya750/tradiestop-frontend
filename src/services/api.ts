@@ -1,7 +1,7 @@
 import { User, Role, Booking, Tradie, Invoice, Review, SupportTicket, Notification, CompanyDetails, InvoiceItem, PaymentStatus, ClientReview, BookingStatus, SupportTicketStatus } from '../types';
 import { AppData } from '../contexts/DataContext';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 const getAuthToken = () => {
     try {
