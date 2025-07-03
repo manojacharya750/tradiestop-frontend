@@ -66,7 +66,14 @@ export interface Invoice {
   id: string;
   bookingId: string;
   tradie: { id: string; name: string; profession: string; companyDetails: CompanyDetails; };
-  client: { id: string; name: string; address: string; };
+  client: { 
+    id: string; 
+    name: string; 
+    address: string; 
+    email?: string;
+    phone?: string;
+  };
+  jobAddress?: string;
   invoiceNumber: string;
   issueDate: string;
   dueDate: string;
@@ -80,7 +87,8 @@ export interface Invoice {
   taxRate: number;
   themeColor: string;
   footerNotes?: string;
-  logoUrl?: string; // override for default company logo
+  logoDataUrl?: string;
+  signatureDataUrl?: string;
 }
 
 
