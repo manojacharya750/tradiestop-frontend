@@ -1,36 +1,18 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useData } from '../hooks/useData';
-import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../hooks/useToast';
-import { Invoice, Role, PaymentStatus } from '../types';
+import { Invoice } from '../types';
 import Spinner from '../components/Spinner';
 import NotFoundPage from './NotFoundPage';
-import { DocumentTextIcon, CheckCircleIcon } from '../components/icons';
+import { DocumentTextIcon } from '../components/icons';
 
 interface PageProps {
   invoiceId: string;
 }
 
 const InvoicePreviewPage: React.FC<PageProps> = ({ invoiceId }) => {
-    const { data, isLoading, markInvoiceAsPaid } = useData();
-    const { currentUser } = useAuth();
-    const { addToast } = useToast();
-    const [isPaying, setIsPaying] = useState(false);
+    const { data, isLoading } = useData();
 
     const invoice = useMemo(() => data.invoices.find(inv => inv.id === invoiceId), [invoiceId, data.invoices]);
-
-    const handleMarkAsPaid = async () => {
-        if (!invoice) return;
-        setIsPaying(true);
-        try {
-            await markInvoiceAsPaid(invoice.id);
-            addToast('Invoice marked as paid!', 'success');
-        } catch (err) {
-            addToast('Failed to mark invoice as paid.', 'error');
-        } finally {
-            setIsPaying(false);
-        }
-    };
 
     if (isLoading && !invoice) {
         return <div className="p-8 bg-white rounded-lg flex justify-center"><Spinner size="lg" /></div>;
@@ -40,19 +22,26 @@ const InvoicePreviewPage: React.FC<PageProps> = ({ invoiceId }) => {
         return <NotFoundPage />;
     }
     
-    const themeColors = {
-        default: { bg: 'bg-slate-700', text: 'text-slate-700', border: 'border-slate-700' },
-        electrician: { bg: 'bg-yellow-500', text: 'text-blue-800', border: 'border-blue-800' },
-        plumber: { bg: 'bg-cyan-500', text: 'text-teal-800', border: 'border-teal-800' },
-    }['default'];
+    const displayLogoUrl = invoice.logoUrl || invoice.tradie.companyDetails.logoUrl;
 
     return (
         <>
-        <div className="p-4 sm:p-8 bg-white rounded-lg shadow-lg max-w-4xl mx-auto" id="invoice-to-print">
-            <header className="flex justify-between items-start pb-6 border-b-2" style={{ borderColor: themeColors.bg.slice(3, -4)}}>
+        <div className="relative isolate p-4 sm:p-8 bg-white rounded-lg shadow-lg max-w-4xl mx-auto overflow-hidden" id="invoice-to-print">
+            {/* Watermark */}
+            {displayLogoUrl && (
+                <div className="absolute inset-0 flex items-center justify-center -z-10">
+                    <img 
+                        src={displayLogoUrl} 
+                        alt="Watermark" 
+                        className="w-2/3 h-2/3 object-contain opacity-10 pointer-events-none transform -rotate-12" 
+                    />
+                </div>
+            )}
+            
+            <header className="flex justify-between items-start pb-6 border-b-2" style={{ borderColor: invoice.themeColor }}>
                 <div>
-                    {invoice.tradie.companyDetails.logoUrl && 
-                        <img src={invoice.tradie.companyDetails.logoUrl} alt={`${invoice.tradie.companyDetails.name} Logo`} className="h-16 w-auto mb-4"/>
+                    {displayLogoUrl && 
+                        <img src={displayLogoUrl} alt={`${invoice.tradie.companyDetails.name} Logo`} className="h-16 w-auto mb-4 object-contain"/>
                     }
                     <h1 className="text-xl font-bold text-slate-800">{invoice.tradie.companyDetails.name}</h1>
                     <p className="text-sm text-slate-500">{invoice.tradie.companyDetails.address}</p>
@@ -60,7 +49,7 @@ const InvoicePreviewPage: React.FC<PageProps> = ({ invoiceId }) => {
                     <p className="text-sm text-slate-500">{invoice.tradie.companyDetails.taxId}</p>
                 </div>
                 <div className="text-right">
-                    <h2 className={`text-4xl font-bold uppercase ${themeColors.text}`}>Invoice</h2>
+                    <h2 className="text-4xl font-bold uppercase" style={{ color: invoice.themeColor }}>Invoice</h2>
                     <p className="text-lg text-slate-600 mt-2">{invoice.invoiceNumber}</p>
                     <p className="text-sm text-slate-500">Issued: {invoice.issueDate}</p>
                 </div>
@@ -82,7 +71,7 @@ const InvoicePreviewPage: React.FC<PageProps> = ({ invoiceId }) => {
             <section>
                 <table className="w-full text-left">
                     <thead>
-                        <tr className={`${themeColors.bg} text-white text-sm`}>
+                        <tr className="text-white text-sm" style={{ backgroundColor: invoice.themeColor }}>
                             <th className="p-3 font-semibold">Description</th>
                             <th className="p-3 font-semibold text-center w-24">QTY</th>
                             <th className="p-3 font-semibold text-right w-32">Unit Price</th>
@@ -113,32 +102,29 @@ const InvoicePreviewPage: React.FC<PageProps> = ({ invoiceId }) => {
                         <span className="font-medium text-slate-800">${invoice.subtotal.toFixed(2)}</span>
                     </p>
                     <p className="flex justify-between">
-                        <span className="text-slate-600">Tax (10%):</span>
+                        <span className="text-slate-600">Tax ({invoice.taxRate}%):</span>
                         <span className="font-medium text-slate-800">${invoice.tax.toFixed(2)}</span>
                     </p>
-                    <p className={`flex justify-between font-bold text-xl py-2 border-t-2 ${themeColors.border}`}>
-                        <span className={`${themeColors.text}`}>Amount Due:</span>
-                        <span className={`${themeColors.text}`}>${invoice.total.toFixed(2)}</span>
+                    <p className="flex justify-between font-bold text-xl py-2 border-t-2" style={{ borderColor: invoice.themeColor }}>
+                        <span style={{ color: invoice.themeColor }}>Amount Due:</span>
+                        <span style={{ color: invoice.themeColor }}>${invoice.total.toFixed(2)}</span>
                     </p>
                 </div>
             </section>
+            
+            <footer className="mt-16 pt-8 border-t border-slate-200 text-sm text-slate-600 text-center">
+                 {invoice.footerNotes && <p className="mb-8">{invoice.footerNotes}</p>}
+                 <div className="w-full md:w-1/2 ml-auto">
+                    <div className="h-12 border-b-2 border-slate-400"></div>
+                    <p className="mt-2 text-center text-sm">Signature</p>
+                    <p className="mt-1 text-center font-bold text-slate-800">{invoice.tradie.companyDetails.name}</p>
+                 </div>
+            </footer>
         </div>
         <div className="mt-8 text-center no-print">
             <button onClick={() => window.print()} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center gap-2 mx-auto">
                 <DocumentTextIcon className="h-5 w-5"/> Print / Save as PDF
             </button>
-            {currentUser?.role === Role.CLIENT && (invoice.status === PaymentStatus.PENDING || invoice.status === PaymentStatus.OVERDUE) && (
-                <div className="mt-4">
-                    <button
-                        onClick={handleMarkAsPaid}
-                        disabled={isPaying}
-                        className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center gap-2 mx-auto disabled:opacity-50"
-                    >
-                        {isPaying ? <Spinner size="sm" /> : <CheckCircleIcon className="h-5 w-5" />}
-                        {isPaying ? 'Processing...' : 'Mark as Paid'}
-                    </button>
-                </div>
-            )}
         </div>
         </>
     );
