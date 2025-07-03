@@ -14,6 +14,21 @@ export interface AppData {
   supportTickets: SupportTicket[];
 }
 
+export interface InvoiceCreationPayload {
+    bookingId: string;
+    items: Omit<InvoiceItem, 'id'>[];
+    notes: string;
+    clientName: string;
+    clientAddress: string;
+    invoiceNumber: string;
+    issueDate: string;
+    dueDate: string;
+    taxRate: number;
+    themeColor: string;
+    footerNotes: string;
+    logoUrl: string;
+}
+
 export interface DataContextType {
   data: AppData;
   isLoading: boolean;
@@ -30,8 +45,7 @@ export interface DataContextType {
   createSupportTicket: (ticketData: Omit<SupportTicket, 'id'|'date'|'status'|'userId'|'userName'|'userRole'>) => Promise<void>;
   updateCompanyDetails: (details: CompanyDetails) => Promise<void>;
   updateUserProfile: (updates: Partial<Pick<User, 'name' | 'imageUrl'>>) => Promise<User | null>;
-  createInvoice: (bookingId: string, items: Omit<InvoiceItem, 'id'>[], notes: string) => Promise<Invoice|null>;
-  markInvoiceAsPaid: (invoiceId: string) => Promise<void>;
+  createInvoice: (invoiceData: InvoiceCreationPayload) => Promise<Invoice|null>;
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -198,9 +212,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
   };
 
-  const createInvoice = async (bookingId: string, items: Omit<InvoiceItem, 'id'>[], notes: string): Promise<Invoice|null> => {
+  const createInvoice = async (invoiceData: InvoiceCreationPayload): Promise<Invoice|null> => {
       try {
-          const newInvoice = await api.createInvoice(bookingId, items, notes);
+          const newInvoice = await api.createInvoice(invoiceData);
           setData(prevData => ({ ...prevData, invoices: [newInvoice, ...prevData.invoices] }));
           return newInvoice;
       } catch (err) {
@@ -209,21 +223,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
   };
 
-  const markInvoiceAsPaid = async (invoiceId: string) => {
-      try {
-          const updatedInvoice = await api.markInvoiceAsPaid(invoiceId);
-          setData(prevData => ({
-              ...prevData,
-              invoices: prevData.invoices.map(inv => inv.id === invoiceId ? updatedInvoice : inv),
-          }));
-      } catch (err) {
-          console.error("Failed to mark invoice as paid", err);
-          throw err;
-      }
-  };
-
   return (
-    <DataContext.Provider value={{ data, isLoading, error, fetchData, updateBookingStatus, rescheduleBooking, updateTicketStatus, addReview, addClientReview, createBooking, addUser, deleteUser, createSupportTicket, updateCompanyDetails, updateUserProfile, createInvoice, markInvoiceAsPaid }}>
+    <DataContext.Provider value={{ data, isLoading, error, fetchData, updateBookingStatus, rescheduleBooking, updateTicketStatus, addReview, addClientReview, createBooking, addUser, deleteUser, createSupportTicket, updateCompanyDetails, updateUserProfile, createInvoice }}>
       {children}
     </DataContext.Provider>
   );
