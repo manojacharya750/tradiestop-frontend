@@ -20,13 +20,17 @@ export interface InvoiceCreationPayload {
     notes: string;
     clientName: string;
     clientAddress: string;
+    clientEmail: string;
+    clientPhone: string;
+    jobAddress: string;
     invoiceNumber: string;
     issueDate: string;
     dueDate: string;
     taxRate: number;
     themeColor: string;
     footerNotes: string;
-    logoUrl: string;
+    logoDataUrl: string;
+    signatureDataUrl: string;
 }
 
 export interface DataContextType {
